@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #messages { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; }
+        #input { width: 80%; }
+        .message { margin: 5px 0; }
+        .username { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="messages"></div>
+    <input id="input" autocomplete="off" placeholder="Type your message here..." /><button onclick="sendMessage()">Send</button>
+
+    <script>
+        const socket = io();
+
+        // Function to display a message in the chat window
+        function displayMessage(data) {
+            const messagesDiv = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.innerHTML = `<span class="username">${data.username}:</span> ${data.message}`;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroll to the bottom
+        }
+
+        socket.on('receive_message', function(data) {
+            displayMessage(data);
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('input');
+            const username = prompt("Enter your username:");
+            const message = input.value;
+
+            if (username && message) {
+                const messageData = { username: username, message: message };
+                socket.emit('send_message', messageData);
+                displayMessage(messageData); // Display sent message immediately
+                input.value = ''; // Clear input field
+            } else {
+                alert("Please enter both username and message.");
+            }
+        }
+    </script>
+</body>
+</html>
